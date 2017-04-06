@@ -3,9 +3,10 @@
 * Add support for per-client configuration.
 * Simplify TLS configuration.
 * Allow dtab fallback when consul returns an empty address set.
-* Move timeoutMs from router section to client section in linkerd config.
-* Add timeoutMs option to server section in linkerd config.
 * Automatically upgrade all HTTP/1.0 messages to HTTP/1.1.
+* Add support for per-service configuration.
+* Split the timeoutMs router option into a requestAttemptTimeoutMs client option
+  and a totalTimeoutMs service option.
 
 ## 0.9.1 2017-03-15
 

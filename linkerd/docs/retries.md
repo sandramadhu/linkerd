@@ -3,7 +3,7 @@
 ```yaml
 routers:
 - ...
-  client:
+  service:
     retries:
       budget:
         minRetriesPerSec: 5
@@ -15,8 +15,8 @@ routers:
         maxMs: 10000
 ```
 
-linkerd can automatically retry requests on certain failures (for example,
-connection errors) and can be configured via the retries block.
+linkerd can automatically retry requests on certain failures and can be
+configured via the retries block.
 
 Key | Default Value | Description
 --- | ------------- | -----------
@@ -29,7 +29,7 @@ backoff | See [retry backoff](#retry-backoff-parameters) | Object that determine
 > For every 10 non-retry calls, allow 1 retry
 
 ```yaml
-client:
+service:
   retries:
     budget:
       percentCanRetry: 0.1
@@ -38,7 +38,7 @@ client:
 > For every non-retry call, allow 2 retries
 
 ```yaml
-client:
+service:
   retries:
     budget:
       percentCanRetry: 2.0

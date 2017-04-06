@@ -218,7 +218,9 @@ trait StdStackRouter[Req, Rsp, This <: StdStackRouter[Req, Rsp, This]]
         def pathMk(dst: Dst.Path, sf: ServiceFactory[Req, Rsp]) = {
           val sr = stats.scope("dst", "path", dst.path.show.stripPrefix("/"))
           val stk = pathStack ++ Stack.Leaf(Endpoint, sf)
-          stk.make(params + dst + param.Stats(sr))
+
+          val pathParams = params[StackRouter.Client.PerPathParams].paramsFor(dst.path)
+          stk.make(params ++ pathParams + dst + param.Stats(sr))
         }
 
         def boundMk(bound: Dst.Bound, sf: ServiceFactory[Req, Rsp]) = {
@@ -238,7 +240,8 @@ trait StdStackRouter[Req, Rsp, This <: StdStackRouter[Req, Rsp, This]]
             case id: Path => id
             case _ => Path.empty
           }
-          val clientParams = params[StackRouter.Client.PerClientParams].paramsFor(name) // client stats are scoped by label within .newClient
+          val clientParams = params[StackRouter.Client.PerClientParams].paramsFor(name)
+          // client stats are scoped by label within .newClient
           client.withParams(params ++ clientParams + clientStats + withdrawOnlyBudget)
             .newClient(bound, mkClientLabel(bound))
         }
@@ -302,6 +305,23 @@ object StackRouter {
       val default: PerClientParams = PerClientParams(Seq.empty)
     }
 
+    case class PathParams(prefix: PathMatcher, mk: Map[String, String] => Stack.Params)
+
+    case class PerPathParams(params: Seq[PathParams]) {
+      def paramsFor(name: Path): Stack.Params = {
+        params.foldLeft(Stack.Params.empty) {
+          case (params, PathParams(prefix, mk)) =>
+            prefix.extract(name) match {
+              case Some(vars) => params ++ mk(vars)
+              case None => params
+            }
+        }
+      }
+    }
+    implicit object PerPathParams extends Stack.Param[PerPathParams] {
+      val default: PerPathParams = PerPathParams(Seq.empty)
+    }
+
     /**
      * Install the ClassifiedTracing filter immediately above any
      * protocol-specific annotating tracing filters, to provide response
@@ -331,6 +351,9 @@ object StackRouter {
      *   be computed from these stats to reflect the upstream client's
      *   view of this endpoint.
      *
+     * - The total timeout module sets a timeout for the request including all
+     *   retries and therefore must be above the retries module.
+     *
      * - Application-level retries are controlled by [[ClassifiedRetries]].
      *
      * - Then, factoryToService is used to manage properly manage
@@ -349,6 +372,7 @@ object StackRouter {
     stk.push(StackClient.Role.prepFactory, identity[ServiceFactory[Req, Rsp]](_))
     stk.push(factoryToService)
     stk.push(ClassifiedRetries.module)
+    stk.push(TotalTimeout.module)
     stk.push(StatsFilter.module)
     stk.push(DstTracing.Path.module)
     stk.push(DstPathCtx.Setter.module)

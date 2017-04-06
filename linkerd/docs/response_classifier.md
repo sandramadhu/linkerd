@@ -3,8 +3,7 @@
 
 ```yaml
 routers:
-- ...
-  client:
+- protocol: http
   responseClassifier:
     kind: io.l5d.retryableRead5XX
 ```

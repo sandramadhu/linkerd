@@ -91,9 +91,9 @@ trait RouterConfig {
   // refine to more specific config types.
   def servers: Seq[ServerConfig]
   def client: Option[Client]
+  def service: Option[Svc]
 
   var dtab: Option[Dtab] = None
-  var failFast: Option[Boolean] = None
   var originator: Option[Boolean] = None
   var dstPrefix: Option[String] = None
 
@@ -140,7 +140,6 @@ trait RouterConfig {
    * responseClassifier categorizes responses to determine whether
    * they are failures and if they are retryable.
    */
-
   @JsonProperty("responseClassifier")
   var _responseClassifier: Option[ResponseClassifierConfig] = None
 
@@ -179,11 +178,11 @@ trait RouterConfig {
   @JsonIgnore
   def routerParams = (Stack.Params.empty + defaultBudget)
     .maybeWith(dtab.map(dtab => RoutingFactory.BaseDtab(() => dtab)))
-    .maybeWith(failFast.map(FailFastFactory.FailFast(_)))
     .maybeWith(originator.map(Originator.Param(_)))
     .maybeWith(dstPrefix.map(pfx => RoutingFactory.DstPrefix(Path.read(pfx))))
     .maybeWith(bindingCache.map(_.capacity))
-    .maybeWith(client.map(_.clientParams)) +
+    .maybeWith(client.map(_.clientParams))
+    .maybeWith(service.map(_.pathParams)) +
     param.ResponseClassifier(responseClassifier) +
     param.Label(label) +
     DstBindingFactory.BindingTimeout(bindingTimeout)

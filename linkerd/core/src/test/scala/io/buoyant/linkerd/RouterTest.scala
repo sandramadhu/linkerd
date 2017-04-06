@@ -55,12 +55,12 @@ servers:
     val yaml =
       """|protocol: plain
          |client:
-         |  timeoutMs: 1234
+         |  requestAttemptTimeoutMs: 1234
          |servers:
          |- port: 4321
          |""".stripMargin
     val client = parseConfig(yaml).client.get.asInstanceOf[DefaultClient]
-    assert(client.timeoutMs == Some(1234))
+    assert(client.requestAttemptTimeoutMs == Some(1234))
   }
 
   test("loopback & protocol-specific default port used when no ports specified") {
@@ -138,7 +138,7 @@ servers:
   test("with retries") {
     val yaml =
       """|protocol: plain
-         |client:
+         |service:
          |  retries:
          |    backoff:
          |      kind: jittered
@@ -149,8 +149,8 @@ servers:
          |      minRetriesPerSec: 3
          |      percentCanRetry: 0.33
          |""".stripMargin
-    val client = parseConfig(yaml).client.get.asInstanceOf[DefaultClient]
-    assert(client.retries == Some(RetriesConfig(
+    val svc = parseConfig(yaml).service.get.asInstanceOf[DefaultSvc]
+    assert(svc.retries == Some(RetriesConfig(
       Some(JitteredBackoffConfig(Some(1), Some(1000))),
       Some(RetryBudgetConfig(Some(30), Some(3), Some(0.33)))
     )))

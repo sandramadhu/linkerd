@@ -157,6 +157,7 @@ case class HttpConfig(
 
   var client: Option[HttpClient] = None
   var servers: Seq[HttpServerConfig] = Nil
+  var service: Option[Svc] = None
 
   @JsonIgnore
   override def baseResponseClassifier =

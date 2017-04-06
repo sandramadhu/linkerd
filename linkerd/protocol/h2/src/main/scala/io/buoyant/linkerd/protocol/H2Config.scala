@@ -76,6 +76,7 @@ object H2Initializer extends H2Initializer
 class H2Config extends RouterConfig {
 
   var client: Option[H2Client] = None
+  var service: Option[Svc] = None
   var servers: Seq[H2ServerConfig] = Nil
 
   @JsonDeserialize(using = classOf[H2IdentifierConfigDeserializer])

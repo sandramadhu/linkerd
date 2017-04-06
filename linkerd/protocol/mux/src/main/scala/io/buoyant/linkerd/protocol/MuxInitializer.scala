@@ -27,6 +27,7 @@ class MuxConfig extends RouterConfig {
 
   var servers: Seq[ServerConfig] = Nil
   var client: Option[Client] = None
+  var service: Option[Svc] = None
 
   @JsonIgnore
   override def protocol = MuxInitializer

@@ -7,7 +7,7 @@ import com.twitter.finagle.service.{ResponseClass, ReqRep, ResponseClassifier}
 import com.twitter.finagle.util.LoadService
 import com.twitter.util.{Duration, Return, Throw, Try, TimeoutException}
 import io.buoyant.config.Parser
-import io.buoyant.linkerd.{ResponseClassifierConfig, ResponseClassifierInitializer, RouterConfig}
+import io.buoyant.linkerd._
 import io.buoyant.linkerd.protocol.H2Initializer
 import org.scalatest.FunSuite
 
@@ -158,7 +158,8 @@ class ResponseClassifiersTest extends FunSuite {
             |- port: 0
             |""".stripMargin
       val mapper = Parser.objectMapper(yaml, Iterable(Seq(H2Initializer), Seq(init)))
-      assert(mapper.readValue[RouterConfig](yaml)._responseClassifier.isDefined)
+      val router = mapper.readValue[RouterConfig](yaml)
+      assert(router._responseClassifier.isDefined)
     }
   }
 
